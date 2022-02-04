@@ -8,6 +8,7 @@ def get_api_key():
             key = f.readline().strip()
     except OSError as e:
         print(e)
+        key = None
     return key
 
 REDMINE_KEY = get_api_key()

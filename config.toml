@@ -1,0 +1,11 @@
+[default]
+project = "suricata"
+latest = "7.0rc1"
+
+[suri-6]
+version = "6.0.5"
+label = "Needs backport to 6.0"
+
+[suri-5]
+version = "5.0.9"
+label = "Needs backport to 5.0"
