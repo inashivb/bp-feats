@@ -1,7 +1,7 @@
 # bp-feats
 
 A little project to automate backporting for Suricata.
-Configurable variables are present in `settings.py`
+Configurable variables are present in `config.toml` per section.
 
 In order to use the project,
 
