@@ -13,10 +13,9 @@ def load_conf():
 class RedmineBackport:
     def __init__(self, url, key, latest_version, project):
         self.redmine = Redmine(url, key=key)
-        self.user_id = self._get_user_id()
-        self.version_id = self._get_version_id(settings.PROJECT_VERSION)
-        self.latest_version_id = self._get_version_id(latest_version)
         self.project = project
+        self.user_id = self._get_user_id()
+        self.latest_version_id = self._get_version_id(latest_version)
 
     def _get_user_id(self):
         user = self.redmine.user.get(settings.USER_NAME)
@@ -24,21 +23,22 @@ class RedmineBackport:
 
     def _get_version_id(self, version):
         versions = self.redmine.version.filter(
-            project_id=settings.PROJECT_NAME)
+            project_id=self.project)
         latest = filter(lambda v: v.name == version, versions)
         latest = list(latest)[0].id
         return latest
 
-    def print_bp_candidates(self):
-        issues = self.redmine.issue.filter(project_id=settings.PROJECT_NAME,
-                                           assigned_to_id=self.user_id,
-                                           fixed_version_id=self.version_id,
+    def print_bp_candidates(self, version, private):
+        version_id = self._get_version_id(version)
+        issues = self.redmine.issue.filter(project_id=self.project,
+#                                           assigned_to_id=self.user_id,
+                                           fixed_version_id=version_id,
                                            include="relations",
-                                           is_private=settings.PRIVATE,)
-        if settings.PRIVATE:
+                                           is_private=private,)
+        if private:
             input(
                 "You are proceeding with backports for PRIVATE tickets, do you wish to continue?")
-        print("Ready to backport for {}:".format(settings.PROJECT_VERSION))
+        print("Ready to backport for {}:".format(version))
         i = 0
         for issue in issues:
             copied_to = [(rel.issue_id, rel.issue_to_id)
@@ -49,9 +49,10 @@ class RedmineBackport:
                     i += 1
                     print("{}. {}/issues/{}".format(i,
                           settings.REDMINE_URL, str(bp_issue)))
+        print("")
 
     def get_missing_tickets(self, version, label):
-        issues = self.redmine.issue.filter(project_id=settings.PROJECT_NAME,
+        issues = self.redmine.issue.filter(project_id=self.project,
                                            fixed_version_id=self.latest_version_id,
                                            include="relations",
                                            status_id="open",
@@ -90,7 +91,7 @@ def main():
             if k == "default":
                 continue
             rm_bp.get_missing_tickets(conf[k]["version"], conf[k]["label"])
-#            rm_bp.print_bp_candidates()
+            rm_bp.print_bp_candidates(conf[k]["version"], conf[k]["private"])
     else:
         print("Key ERROR!")
         sys.exit(1)

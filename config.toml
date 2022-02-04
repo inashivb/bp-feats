@@ -2,10 +2,12 @@
 project = "suricata"
 latest = "7.0rc1"
 
-[suri-6]
+[suri-6-pub]
 version = "6.0.5"
 label = "Needs backport to 6.0"
+private = 0
 
-[suri-5]
+[suri-5-pub]
 version = "5.0.9"
 label = "Needs backport to 5.0"
+private = 0
