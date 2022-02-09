@@ -55,28 +55,34 @@ class RedmineBackport:
         issues = self.redmine.issue.filter(project_id=self.project,
                                            fixed_version_id=self.latest_version_id,
                                            include="relations",
-                                           status_id="open",
+                                           status_id="!rejected",
                                            cf_5=label,)
         unwanted_rel_types = ["relates", "duplicates", "duplicated",
                               "blocks", "blocked", "precedes", "follows", "copied_from"]
         print("Issues possibly missing backport tickets for {}:".format(version))
         i = 0
         for issue in issues:
-            list(issue)
-            if not issue.relations:
-                not_copied_to = [issue.id]
-            else:
-                not_copied_to = [rel.issue_id for rel in issue.relations if rel.relation_type !=
-                                 "copied_to" and rel.relation_type not in unwanted_rel_types]
-            for iss in not_copied_to:
-                i += 1
-                print("{}. {}/issues/{}".format(i, settings.REDMINE_URL, str(iss)))
-
-            copied_to = [(rel.issue_id, rel.issue_to_id)
-                         for rel in issue.relations if rel.relation_type == "copied_to"]
-            for issue, bp_issue in copied_to:
-                # TODO handle case where there's a copied ticket but not for the target version intended
-                pass
+#            print("ID: ", issue.id, list(issue.relations))
+            if issue.relations:
+                copied_to = [(rel.issue_id, rel.issue_to_id)
+                             for rel in issue.relations if rel.relation_type == "copied_to"]
+                if copied_to:
+#                    print("copied_to: ", copied_to)
+#                    import ipdb
+#                    ipdb.set_trace()
+                    version_id = self._get_version_id(version)
+                    cur_issue = list()
+                    for _, bp_issue in copied_to:
+                        cur_issue.append(self.redmine.issue.filter(
+                                fixed_version_id=version_id,
+                                issue_id=bp_issue,
+                                ))
+                        #print("cur issue: ", list(cur_issue))
+                    if cur_issue:
+                        #print("Continuing")
+                        continue
+            i += 1
+            print("{}. {}/issues/{}".format(i, settings.REDMINE_URL, str(issue.id)))
 
         print("")
 
