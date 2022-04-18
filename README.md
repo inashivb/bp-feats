@@ -5,7 +5,7 @@ Configurable variables are present in `config.toml` per section.
 In order to use the project,
 
 ```
-python -r requirements.txt
+pip3 -r requirements.txt
 ```
 Save your Redmine API key in a file named `api.keys`.
 
